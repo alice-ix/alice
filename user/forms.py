@@ -3,6 +3,7 @@
 hello
 '''
 from django import forms
+from .models import AliceUser
 
 class RegisterForm(forms.Form):
     email = forms.EmailField(
@@ -23,3 +24,21 @@ class RegisterForm(forms.Form):
         },
         widget=forms.PasswordInput, label='비밀번호 확인'
     )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        password = cleaned_data.get('password')
+        re_password = cleaned_data.get('re_password')
+
+        if password and re_password:
+            if password != re_password:
+                self.add_error('password', '비밀번호가 서로 다릅니다.')
+                self.add_error('re_password', '비밀번호가 서로 다릅니다.')
+            else:
+                user = AliceUser(
+                    email=email,
+                    password=password
+                )
+                user.save()
+
